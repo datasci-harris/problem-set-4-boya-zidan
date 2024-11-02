@@ -330,7 +330,7 @@ After unzipping, the gz_2010_us_860_00_500k.xml file is 16 KB, gz_2010_us_860_00
 2.
 
 ```{python}
-data = gpd.read_file("/Users/kongzidan/Documents/GitHub/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp")
+data = gpd.read_file("/Users/boyalin/Documents/GitHub/ppha30538_ps/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp")
 
 texas_zip = data[data['ZCTA5'].astype(str).str.startswith(
     ('733', '75', '76', '77', '78', '79'))]
@@ -459,7 +459,7 @@ Referencing https://stackoverflow.com/questions/30740046/calculate-distance-to-n
 
     c.
 ```{python}
-with open("/Users/kongzidan/Documents/GitHub/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.prj", "r") as prj_file:
+with open("/Users/boyalin/Documents/GitHub/ppha30538_ps/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.prj", "r") as prj_file:
     contents = prj_file.read()
     print(contents)
 ```
@@ -495,8 +495,103 @@ plt.show()
 # Effects of closures on access in Texas (15 pts)
 
 1.
+
+```{python}
+texas_closures = corrected_closures[corrected_closures['ZIP_CD'].astype(str).str.startswith(('733', '75', '76', '77', '78', '79'))]
+
+zip_closure_counts = texas_closures.groupby('ZIP_CD').size().reset_index(name='Closures_Counts')
+
+print(zip_closure_counts)
+
+zip_closure_summary = zip_closure_counts['Closures_Counts'].value_counts().reset_index()
+zip_closure_summary.columns = ['number_of_closures', 'number_of_zip_codes']
+zip_closure_summary
+```
+
 2.
+
+```{python}
+texas_closures['ZIP_CD'] = texas_closures['ZIP_CD'].astype(str)
+texas_closures['ZIP_CD'] = texas_closures['ZIP_CD'].str.split('.').str[0].str.strip()
+
+affected_zip_codes = texas_closures['ZIP_CD'].unique()
+affected_texas_zips = zips_texas_centroids[zips_texas_centroids['ZCTA5'].isin(affected_zip_codes)]
+affected_texas_zips
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+zips_texas_centroids.plot(ax=ax, color='lightgrey',
+                          edgecolor='black', linewidth=0.5)
+affected_texas_zips.plot(ax=ax, color='red', alpha=0.5)
+
+ax.set_title(
+    'Texas ZIP Codes Affected by Hospital Closures (2016-2019)', fontsize=15)
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+plt.show()
+
+print(f'Total affected ZIP codes: {len(affected_zip_codes)}')
+```
+
 3.
+
+```{python}
+directly_affected_zips = affected_texas_zips.copy()
+
+# 1 mile = 1609.34 meters
+buffer_distance = 10 * 1609.34 
+
+# Step 4: If the CRS is geographic (e.g., EPSG 4326), reproject to a projected CRS (e.g., EPSG 3857)
+if zips_texas_centroids.crs is None or zips_texas_centroids.crs == 'EPSG:4326':
+    zips_texas_centroids = zips_texas_centroids.to_crs(epsg=3857)
+
+directly_affected_zips['geometry'] = directly_affected_zips.geometry.buffer(buffer_distance)
+
+zips_texas_combined = zips_texas_centroids.merge(distances_full, on='ZCTA5', how='inner')
+zips_texas_combined
+
+indirectly_affected_zips = gpd.sjoin(zips_texas_centroids, directly_affected_zips, how='inner', predicate='intersects')
+
+indirectly_affected_zip_codes = indirectly_affected_zips['ZCTA5_left'].unique()
+
+num_indirectly_affected_zips = len(indirectly_affected_zip_codes)
+print(f'Total indirectly affected ZIP codes in Texas: {num_indirectly_affected_zips}')
+```
+
 4.
 
+```{python}
+def categorize_zip(zip_code):
+    if zip_code in directly_affected_zips:
+        return 'Directly Affected'
+    elif zip_code in indirectly_affected_zip_codes:
+        return 'Indirectly Affected'
+    else:
+        return 'Not Affected'
+
+zips_texas_centroids['category'] = zips_texas_centroids['ZCTA5'].apply(categorize_zip)
+
+color_map = {
+    'Directly Affected': 'red',
+    'Indirectly Affected': 'orange',
+    'Not Affected': 'lightgrey'
+}
+
+zips_texas_centroids['color'] = zips_texas_centroids['category'].map(color_map)
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+
+zips_texas_centroids.plot(ax=ax, color=zips_texas_centroids['color'], edgecolor='black', linewidth=0.5)
+
+ax.set_title('Texas ZIP Codes Affected by Hospital Closures (2016-2019)', fontsize=15)
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+plt.show()
+```
+
 # Reflecting on the exercise (10 pts)
+
+1. 
+
+2. 
