@@ -1,60 +1,62 @@
 ---
 title: "PS4 v1.1: Spatial"
 author: "Boya Lin and Zidan Kong"
-format: 
+format:
   pdf:
-    keep-tex: true
-    include-in-header: 
+    keep - tex: true
+    include - in -header:
        text: |
          \usepackage{fvextra}
-         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
-include-before-body:
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines, commandchars =\\\{\}}
+include - before - body:
   text: |
     \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
       showspaces = false,
       showtabs = false,
-      breaksymbolleft={},
+      breaksymbolleft = {},
       breaklines
     }
 ---
 
-**PS4:** Due Sat Nov 2 at 5:00PM Central. Worth 100 points. 
-We use (`*`) to indicate a problem that we think might be time consuming. 
-    
-## Style Points (10 pts) 
-Please refer to the minilesson on code style
-**[here](https://uchicago.zoom.us/rec/share/pG_wQ-pHTQrJTmqNn4rcrw5V194M2H2s-2jdy8oVhWHkd_yZt9o162IWurpA-fxU.BIQlSgZLRYctvzp-)**.
+**PS4: ** Due Sat Nov 2 at 5: 00PM Central. Worth 100 points.
+We use(`*`) to indicate a problem that we think might be time consuming.
 
-## Submission Steps (10 pts)
+# Style Points (10 pts)
+Please refer to the minilesson on code style
+**[here](https: // uchicago.zoom.us / rec / share / pG_wQ - pHTQrJTmqNn4rcrw5V194M2H2s - 2jdy8oVhWHkd_yZt9o162IWurpA - fxU.BIQlSgZLRYctvzp - )**.
+
+# Submission Steps (10 pts)
 1. This problem set is a paired problem set.
-2. Play paper, scissors, rock to determine who goes first. Call that person *Partner 1*.
+2. Play paper, scissors, rock to determine who goes first. Call that person * Partner 1 * .
     - Partner 1 (name and cnet ID): Boya Lin, boya1
-    - Partner 2 (name and cnet ID):
-3. Partner 1 will accept the `ps4` and then share the link it creates with their partner. You can only share it with one partner so you will not be able to change it after your partner has accepted. 
-4. "This submission is our work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: \*\*BL\*\* \*\*\_\_\*\*
+    - Partner 2 (name and cnet ID): Zidan Kong, zidank
+3. Partner 1 will accept the `ps4` and then share the link it creates with their partner. You can only share it with one partner so you will not be able to change it after your partner has accepted.
+4. "This submission is our work alone and complies with the 30538 integrity policy." Add your initials to indicate your agreement: \*\*BL\*\* \*\*ZK\*\*
 5. "I have uploaded the names of anyone else other than my partner and I worked with on the problem set **[here](https://docs.google.com/forms/d/185usrCREQaUbvAXpWhChkjghdGgmAZXA3lPWpXLLsts/edit)**"  (1 point)
 6. Late coins used this pset: \*\*\_\*\* Late coins left after submission: \*\*\_\*\*
-7. Knit your `ps4.qmd` to an PDF file to make `ps4.pdf`, 
-    * The PDF should not be more than 25 pages. Use `head()` and re-size figures when appropriate. 
+7. Knit your `ps4.qmd` to an PDF file to make `ps4.pdf`,
+    * The PDF should not be more than 25 pages. Use `head()` and re - size figures when appropriate.
 8. (Partner 1): push  `ps4.qmd` and `ps4.pdf` to your github repo.
 9. (Partner 1): submit `ps4.pdf` via Gradescope. Add your partner on Gradescope.
 10. (Partner 1): tag your submission in Gradescope
 
-**Important:** Repositories are for tracking code. **Do not commit the data or shapefiles to your repo.** The best way to do this is with `.gitignore`, which we have covered in class. If you do accidentally commit the data, Github has a [guide](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github#removing-files-from-a-repositorys-history). The best course of action depends on whether you have pushed yet. This also means that both partners will have to download the initial raw data and any data cleaning code will need to be re-run on both partners' computers. 
+**Important: ** Repositories are for tracking code. **Do not commit the data or shapefiles to your repo.** The best way to do this is with `.gitignore`, which we have covered in class . If you do accidentally commit the data, Github has a[guide](https: // docs.github.com / en / repositories / working - with -files / managing - large - files / about - large - files - on - github  # removing-files-from-a-repositorys-history). The best course of action depends on whether you have pushed yet. This also means that both partners will have to download the initial raw data and any data cleaning code will need to be re-run on both partners' computers.
 
 ```{python}
 import pandas as pd
 import altair as alt
 alt.renderers.enable("png")
+import geopandas as gpd
+import matplotlib.pyplot as plt
 ```
 
-## Download and explore the Provider of Services (POS) file (10 pts)
+# Download and explore the Provider of Services (POS) file (10 pts)
 
-1. 
+1.
 
-Vairables we pulled in pos2016.csv include PRVDR_CTGRY_SBTYP_CD, PRVDR_CTGRY_CD, CITY_NAME, FAC_NAME (Facility Name), ORGNL_PRTCPTN_DT, PRVDR_NUM (CMS Certification Number), PGM_TRMNTN_CD (Termination Code), TRMNTN_EXPRTN_DT, and ZIP_CD.
+Vairables we pulled in pos2016.csv include PRVDR_CTGRY_SBTYP_CD, PRVDR_CTGRY_CD, CITY_NAME, FAC_NAME(Facility Name), ORGNL_PRTCPTN_DT, PRVDR_NUM(CMS Certification Number), PGM_TRMNTN_CD(Termination Code), TRMNTN_EXPRTN_DT, and ZIP_CD.
 
-2. 
+2.
     a.
 
 ```{python}
@@ -67,18 +69,18 @@ count_2016 = short_term_hospitals_2016.shape[0]
 print(f'Number of short-term hospitals in 2016: {count_2016}')
 ```
 
-This number appears slightly high, since the American Hospital Association (AHA) reported a total of 6,120 hospitals in the U.S. in 2024. In consideration of the growing hospital industry, we would generally expect the number of hospitals in 2016 to be lower than that in 2024.
+This number appears slightly high, since the American Hospital Association(AHA) reported a total of 6, 120 hospitals in the U.S. in 2024. In consideration of the growing hospital industry, we would generally expect the number of hospitals in 2016 to be lower than that in 2024.
 
-Data Source (AHA): https://www.aha.org/statistics/fast-facts-us-hospitals 
+Data Source(AHA): https: // www.aha.org / statistics / fast - facts - us - hospitals
 
     b.
 
-Unlike 7,245 hospitals reported in our data, the American Hospital Association (AHA) reports a total number of 5,534 U.S. hospitals for 2016. The difference may arise from factors such as hospitals name changes, acquisitions, or the presence of branches or devisions, which can lead to multiple entries for the same facility in our data. As a result, when using .nunique(), these hospitals/facilitates might be counted separately, leading to an inflated total. 
+Unlike 7, 245 hospitals reported in our data, the American Hospital Association(AHA) reports a total number of 5, 534 U.S. hospitals for 2016. The difference may arise from factors such as hospitals name changes, acquisitions, or the presence of branches or devisions, which can lead to multiple entries for the same facility in our data. As a result, when using .nunique(), these hospitals / facilitates might be counted separately, leading to an inflated total.
 
-Data Source (AHA): chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.aha.org/
-system/files/2018-01/Fast%20Facts%202018%20pie%20charts.pdf 
+Data Source(AHA): chrome - extension: // efaidnbmnnnibpcajpcglclefindmkaj / https: // www.aha.org /
+system / files / 2018 - 01 / Fast % 20Facts % 202018 % 20pie % 20charts.pdf
 
-3. 
+3.
 
 ```{python}
 pos_2017 = pd.read_csv('pos2017.csv')
@@ -92,7 +94,8 @@ short_term_hospitals_2018 = pos_2018[(pos_2018['PRVDR_CTGRY_CD'] == 1) & (
 pos_2019 = pd.read_csv('pos2019.csv', encoding='ISO-8859-1')
 short_term_hospitals_2019 = pos_2019[(pos_2019['PRVDR_CTGRY_CD'] == 1) & (
     pos_2019['PRVDR_CTGRY_SBTYP_CD'] == 1)].copy()
-# ChatGDP reference for "UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa0 in position 119424", solution: add encoding='ISO-8859-1'
+# ChatGDP reference for "UnicodeDecodeError: 'utf-8' codec can't decode
+# byte 0xa0 in position 119424", solution: add encoding='ISO-8859-1'
 
 short_term_hospitals_2016.loc[:, 'Year'] = 2016
 short_term_hospitals_2017.loc[:, 'Year'] = 2017
@@ -102,7 +105,8 @@ all_hospitals = pd.concat([short_term_hospitals_2016,
                            short_term_hospitals_2017,
                            short_term_hospitals_2018,
                            short_term_hospitals_2019], ignore_index=True)
-# Pandas official website reference for pd.concat: https://pandas.pydata.org/docs/reference/api/pandas.concat.html
+# Pandas official website reference for pd.concat:
+# https://pandas.pydata.org/docs/reference/api/pandas.concat.html
 
 hospitals_by_year = all_hospitals.groupby(
     'Year').size().reset_index(name='Number of Hospitals')
@@ -120,7 +124,7 @@ hospital_chart
 # ChatGDP reference for adding exact values of data above bar chart
 ```
 
-4. 
+4.
     a.
 
 ```{python}
@@ -140,13 +144,13 @@ unique_hospitals_chart = bar_chart + text_labels
 unique_hospitals_chart
 ```
 
-    b. 
+    b.
 
-Both plots present the same counts of observations for each year. It suggests that each observation in our dataset corresponds to a unique hospital (identified by its CMS certification number). In other words, there are no duplicate reocrds for nay hospital in any year. 
+Both plots present the same counts of observations for each year. It suggests that each observation in our dataset corresponds to a unique hospital(identified by its CMS certification number). In other words, there are no duplicate reocrds for nay hospital in any year.
 
-## Identify hospital closures in POS file (15 pts) (*)
+# Identify hospital closures in POS file (15 pts) (*)
 
-1. 
+1.
 
 ```{python}
 # Filter active hospitals in 2016
@@ -157,51 +161,62 @@ active_2016 = active_2016[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD']]
 ```{python}
 # Merge with 2017 data
 merged_2017 = active_2016.merge(
-    short_term_hospitals_2017[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+    short_term_hospitals_2017[['PRVDR_NUM', 'FAC_NAME',
+                               'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2017",
     suffixes=('', '_2017')
 )
-#merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-closed_2017 = merged_2017[(merged_2017['_merge_2017'] == 'left_only') | (merged_2017['PGM_TRMNTN_CD']!= 0)]
+
+closed_2017 = merged_2017[(merged_2017['_merge_2017'] == 'left_only') | (
+    merged_2017['PGM_TRMNTN_CD'] != 0)].copy()
 
 # Add the suspected closure year
 closed_2017.loc[:, 'Year of Suspected Closure'] = 2017
-closed_2017 = closed_2017[['FAC_NAME_2017', 'ZIP_CD_2017', 'Year of Suspected Closure','PRVDR_NUM']]
+closed_2017 = closed_2017[['FAC_NAME_2017', 'ZIP_CD_2017',
+                           'Year of Suspected Closure', 'PRVDR_NUM']]
 ```
 
 ```{python}
+# Merge with 2018 data
 merged_2018 = active_2016.merge(
-    short_term_hospitals_2018[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+    short_term_hospitals_2018[['PRVDR_NUM', 'FAC_NAME',
+                               'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2018",
     suffixes=('', '_2018')
 )
-#merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-closed_2018 = merged_2018[(merged_2018['_merge_2018'] == 'left_only') | (merged_2018['PGM_TRMNTN_CD'] != 0)]
+
+closed_2018 = merged_2018[(merged_2018['_merge_2018'] == 'left_only') | (
+    merged_2018['PGM_TRMNTN_CD'] != 0)].copy()
 
 # Add the suspected closure year
 closed_2018.loc[:, 'Year of Suspected Closure'] = 2018
-closed_2018 = closed_2018[['FAC_NAME_2018', 'ZIP_CD_2018', 'Year of Suspected Closure','PRVDR_NUM']]
+closed_2018 = closed_2018[['FAC_NAME_2018', 'ZIP_CD_2018',
+                           'Year of Suspected Closure', 'PRVDR_NUM']]
 ```
 
 
 ```{python}
+# Merge with 2019 data
 merged_2019 = active_2016.merge(
-    short_term_hospitals_2019[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+    short_term_hospitals_2019[['PRVDR_NUM', 'FAC_NAME',
+                               'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2019",
     suffixes=('', '_2019')
 )
-#merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-closed_2019 = merged_2019[(merged_2019['_merge_2019'] == 'left_only') | (merged_2019['PGM_TRMNTN_CD'] != 0)]
+
+closed_2019 = merged_2019[(merged_2019['_merge_2019'] == 'left_only') | (
+    merged_2019['PGM_TRMNTN_CD'] != 0)].copy()
 
 # Add the suspected closure year
 closed_2019.loc[:, 'Year of Suspected Closure'] = 2019
-closed_2019 = closed_2019[['FAC_NAME_2019', 'ZIP_CD_2019', 'Year of Suspected Closure','PRVDR_NUM']]
+closed_2019 = closed_2019[['FAC_NAME_2019', 'ZIP_CD_2019',
+                           'Year of Suspected Closure', 'PRVDR_NUM']]
 ```
 
 ```{python}
@@ -212,31 +227,37 @@ closed_2019 = closed_2019.rename(columns={'ZIP_CD_2019': 'ZIP_CD'})
 closed_2017 = closed_2017.rename(columns={'FAC_NAME_2017': 'FAC_NAME'})
 closed_2018 = closed_2018.rename(columns={'FAC_NAME_2018': 'FAC_NAME'})
 closed_2019 = closed_2019.rename(columns={'FAC_NAME_2019': 'FAC_NAME'})
-full_closures = pd.concat([closed_2017, closed_2018, closed_2019], ignore_index=True)
-full_closures= full_closures.drop_duplicates(subset=['FAC_NAME', 'ZIP_CD'], keep='first')
+full_closures = pd.concat(
+    [closed_2017, closed_2018, closed_2019], ignore_index=True)
+full_closures = full_closures.drop_duplicates(
+    subset=['FAC_NAME', 'ZIP_CD'], keep='first')
 
-number_of_hospital=len(full_closures)
-number_of_hospital
+number_of_hospital = len(full_closures)
+print(number_of_hospital)
 ```
 
 Referencing Chagpt with suffixes, asking how do i solve the problem when oit creates x and y column for coulumn appears in both dataset.
 
 
-2. 
+2.
 ```{python}
 # sorted by name
-sorted_closed= full_closures.sort_values(by='FAC_NAME')
+sorted_closed = full_closures.sort_values(by='FAC_NAME')
 # Display the first 10 rows
 sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
 
-3. 
+3.
 
 ```{python}
-active_zip_2016 = short_term_hospitals_2016[short_term_hospitals_2016['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2016')
-active_zip_2017 = short_term_hospitals_2017[short_term_hospitals_2017['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2017')
-active_zip_2018 = short_term_hospitals_2018[short_term_hospitals_2018['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2018')
-active_zip_2019 = short_term_hospitals_2019[short_term_hospitals_2019['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2019')
+active_zip_2016 = short_term_hospitals_2016[short_term_hospitals_2016[
+    'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2016')
+active_zip_2017 = short_term_hospitals_2017[short_term_hospitals_2017[
+    'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2017')
+active_zip_2018 = short_term_hospitals_2018[short_term_hospitals_2018[
+    'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2018')
+active_zip_2019 = short_term_hospitals_2019[short_term_hospitals_2019[
+    'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2019')
 ```
 
 ```{python}
@@ -246,13 +267,22 @@ zip_20162019 = zip_20162018.merge(active_zip_2019, on='ZIP_CD', how='outer')
 ```
 
 ```{python}
-closures_zip_checking= full_closures.merge(zip_20162019, on='ZIP_CD', how='left')
-potential_mergers_2017 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2017) & (closures_zip_checking['zip_count_2016'] <= closures_zip_checking['zip_count_2017'])]
-potential_mergers_2018 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2018) & (closures_zip_checking['zip_count_2017'] <= closures_zip_checking['zip_count_2018'])]
-potential_mergers_2019 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2019) & (closures_zip_checking['zip_count_2018'] <= closures_zip_checking['zip_count_2019'])]
+closures_zip_checking = full_closures.merge(
+    zip_20162019, on='ZIP_CD', how='left')
+potential_mergers_2017 = closures_zip_checking[
+    (closures_zip_checking['Year of Suspected Closure'] == 2017) & 
+    (closures_zip_checking['zip_count_2016'] <= closures_zip_checking['zip_count_2017'])]
+potential_mergers_2018 = closures_zip_checking[
+    (closures_zip_checking['Year of Suspected Closure'] == 2018) & 
+    (closures_zip_checking['zip_count_2017'] <= closures_zip_checking['zip_count_2018'])]
+potential_mergers_2019 = closures_zip_checking[
+    (closures_zip_checking['Year of Suspected Closure'] == 2019) & 
+    (closures_zip_checking['zip_count_2018'] <= closures_zip_checking['zip_count_2019'])]
 ```
+
 ```{python}
-potential_mergers = pd.concat([potential_mergers_2017, potential_mergers_2018, potential_mergers_2019])
+potential_mergers = pd.concat(
+    [potential_mergers_2017, potential_mergers_2018, potential_mergers_2019])
 ```
 
     a.
@@ -261,10 +291,13 @@ number_potential_merges = len(potential_mergers)
 number_potential_merges
 ```
 
-8 hospitals fit this definition of potentially being a merger/acquisition
+8 hospitals fit this definition of potentially being a merger / acquisition
     b.
 ```{python}
-corrected_closures = full_closures.merge(potential_mergers[['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure']], on=['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure'], how='left', indicator=True)
+corrected_closures = full_closures.merge(potential_mergers[[
+    'FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure']],
+    on=['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure'],
+    how='left', indicator=True)
 
 corrected_closures = corrected_closures[corrected_closures['_merge'] == 'left_only']
 number_correct_closure = len(corrected_closures)
@@ -275,37 +308,81 @@ After correcting this, I have 169 hospital left.
 
     c.
 ```{python}
-#sorted by name
-sorted_correct_closure= corrected_closures.sort_values(by='FAC_NAME')
+# sorted by name
+sorted_correct_closure = corrected_closures.sort_values(by='FAC_NAME')
 # Display the first 10 rows
 sorted_correct_closure[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
 
-## Download Census zip code shapefile (10 pt) 
+# Download Census zip code shapefile (10 pt)
 
-1. 
+1.
     a.
-    b. 
-2. 
+The five file types are .xml, .shx, .shp, .prj, and .dbf.
+gz_2010_us_860_00_500k.xml is an XML file. It contains metadata for the 2010 cartographic boundary polygon shapefiles representing 5 - Digit ZIP Code Tabulation Areas(ZCTAs) in the U.S, published by the U.S. Census Bureau. 
+gz_2010_us_860_00_500k.shx is a shape index file that serves as an index for the accompanying .shp file. It allows for efficient access to geometric data for efficient spatial querying.
+gz_2010_us_860_00_500k.shp is the core file of the shapefile package, containing the geometric representations of geographic features, such as points, lines, and polygons, defining the actual shapes and locations.
+gz_2010_us_860_00_500k.prj is a small projection file, specifing the coordinate system and projection used for the spatial data, which is necessary for spatial accuracy.
+gz_2010_us_860_00_500k.dbf holds the attribute data like population, area, or other demographic details corresponding to the geometric shapes in the .shp file, providing context and depth to the geometrical information.
 
-## Calculate zip code’s distance to the nearest hospital (20 pts) (*)
+    b.
+After unzipping, the gz_2010_us_860_00_500k.xml file is 16 KB, gz_2010_us_860_00_500k.shx is 265 KB, gz_2010_us_860_00_500k.shp is 837.5 MB, gz_2010_us_860_00_500k.prj is 165 bytes, and gz_2010_us_860_00_500k.dbf is 6.4 MB.
 
-1. 
-2. 
-3. 
-4. 
+2.
+
+```{python}
+data = gpd.read_file(
+    '/Users/boyalin/Documents/GitHub/ppha30538_ps/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp')
+
+texas_zip = data[data['ZCTA5'].astype(str).str.startswith(
+    ('733', '75', '76', '77', '78', '79'))]
+pos_2016_tx = short_term_hospitals_2016[short_term_hospitals_2016['ZIP_CD'].astype(
+    str).str.startswith(('733', '75', '76', '77', '78', '79'))]
+
+hospitals_per_zip = pos_2016_tx['ZIP_CD'].value_counts().reset_index()
+hospitals_per_zip.columns = ['ZIP_CD', 'counts']
+hospitals_per_zip.head(10)
+```
+
+```{python}
+import matplotlib.pyplot as plt
+texas_zip = texas_zip.rename(columns={'ZCTA5': 'ZIP_CD'})
+texas_zip['ZIP_CD'] = texas_zip['ZIP_CD'].astype(str)
+hospitals_per_zip['ZIP_CD'] = hospitals_per_zip['ZIP_CD'].astype(
+    int).astype(str)
+
+texas_map = texas_zip.merge(hospitals_per_zip, on='ZIP_CD', how='left')
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+texas_map.plot(column='counts', ax=ax, legend=True)
+ax.set_title('Number of Hospitals per ZIP Code in Texas (2016)',
+             fontdict={'fontsize': '17'})
+plt.show()
+
+# Chatgpt reference for merging error, searching you are trying to merge on 
+# object and float64 columns for key 'ZIP_CD'. If you wish to proceed you should
+#  use pd.concat, solving with changing datatype
+# ChatGDP reference for adding title for the plot
+```
+
+# Calculate zip code’s distance to the nearest hospital (20 pts) (*)
+
+1.
+2.
+3.
+4.
     a.
     b.
-5. 
+5.
     a.
     b.
     c.
-    
-## Effects of closures on access in Texas (15 pts)
 
-1. 
-2. 
-3. 
-4. 
+# Effects of closures on access in Texas (15 pts)
 
-## Reflecting on the exercise (10 pts) 
+1.
+2.
+3.
+4.
+
+# Reflecting on the exercise (10 pts)
