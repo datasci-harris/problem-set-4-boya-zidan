@@ -377,9 +377,18 @@ zips_all_centroids.shape
 ```
 ```{python}
 zips_all_centroids.columns
+zips_all_centroids.head(5)
 ```
 
-The dimension of the dataframe is that it contains 33120 observations and 7 column. 
+The dimension of the dataframe is that it contains 33120 observations and 7 columns.
+"GEO_ID": identified ID for each area
+"ZCTA5":ZIP Code Tabulation Area (ZCTA) for each zipcode area
+"NAME": seems like same to ZCTA5, area names
+"LSAD":Legal/Statistical Area Description, description of what kind of area notation are using for dataset
+"CENSUSAREA":the area of the ZCTA as calculated by the Census
+"geometry":polygon or multipolygon shaping information
+"centroid":centroid point of the ZIP code polygon area
+
 
 2. 
 ```{python}
