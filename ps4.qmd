@@ -367,16 +367,114 @@ plt.show()
 
 # Calculate zip code’s distance to the nearest hospital (20 pts) (*)
 
-1.
-2.
-3.
-4.
+1. 
+
+```{python}
+
+zips_all_centroids=data.copy()
+zips_all_centroids['centroid'] = zips_all_centroids['geometry'].centroid
+```
+```{python}
+zips_all_centroids.shape
+```
+```{python}
+zips_all_centroids.columns
+```
+
+2. 
+```{python}
+texas_prefixes = ('733', '75', '76', '77', '78', '79')
+bordering_prefixes = ('870','871','872','873','874','875','876','877','878','879','880','881','882','883','884', '73', '74', '716', '717','718','719','720','721','722','723','724','725','726','727','728','729','700','701','702','703','704','705','706','707','708','709','710','711','712','713','714','715','733', '75', '76', '77', '78', '79')
+zips_texas_centroids = zips_all_centroids[zips_all_centroids['ZCTA5'].str.startswith(texas_prefixes)]
+zips_texas_borderstates_centroids = zips_all_centroids[zips_all_centroids['ZCTA5'].str.startswith(bordering_prefixes)]
+
+print(zips_texas_centroids['ZCTA5'].nunique())
+print(zips_texas_borderstates_centroids['ZCTA5'].nunique())
+```
+
+3. 
+```{python}
+hospitals_per_zip_1 = hospitals_per_zip[hospitals_per_zip['counts'] >= 1]
+hospitals_per_zip_1 = hospitals_per_zip_1.rename(columns={'ZIP_CD': 'ZCTA5'})
+zips_withhospital_centroids = zips_texas_borderstates_centroids.merge(hospitals_per_zip_1,on='ZCTA5',how='inner')
+```
+
+I decide to do a inner merger, which only keeps the zipcode areas that have at least 1 hospitals and also located in in Texas or a bordering state, which menas the zipcodes that appear in both dataset. I am merging based on 'ZCTA5', which is teh zipcode.
+
+4. 
+```{python}
+from shapely.geometry import Polygon, Point, MultiPoint
+from datetime import datetime
+```
+
     a.
+```{python}
+subset = zips_texas_centroids.head(10)
+start = datetime.now()
+distances = []
+for index, row in subset.iterrows():
+    nearest_hospital = zips_withhospital_centroids.distance(row['centroid']).min()
+    distances.append((row['ZCTA5'],nearest_hospital))
+end = datetime.now()
+print('Duration:{}'.format(end-start))
+```
+```{python}
+number_in_ziptx = len(zips_texas_centroids)
+number_in_ziptx
+total_duration = number_in_ziptx/10 * (end-start)
+total_duration
+```
+
+The duration for running teh subset is around 0.5 seconds. The approximated entire procedure for full dataset will be around 105 seconds.
+
     b.
-5.
-    a.
-    b.
+```{python}
+start2 = datetime.now()
+distances_full= []
+for index, row in zips_texas_centroids.iterrows():
+    nearest_hospital = zips_withhospital_centroids.distance(row['centroid']).min()
+    distances_full.append((row['ZCTA5'],nearest_hospital))
+end2 = datetime.now()
+print('Duration for full data for :{}'.format(end2-start2))
+```
+```{python}
+distances_full = pd.DataFrame(distances_full, columns=['ZCTA5', 'Distance'])
+```
+
+The time for calculating the distance for full dataset is around 100 seconds, which is quite closed to the previous estimation.
+
+Referencing stackoverflow for for loop by rows, https://stackoverflow.com/questions/16476924/how-can-i-iterate-over-rows-in-a-pandas-dataframe/55557758#55557758, searching how to do for loop row by row
+Referencing https://stackoverflow.com/questions/30740046/calculate-distance-to-nearest-feature-with-geopandas for calculating distance, searching distance to centroid
+
     c.
+```{python}
+with open("/Users/kongzidan/Documents/GitHub/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.prj", "r") as prj_file:
+    contents = prj_file.read()
+    print(contents)
+```
+
+```{python}
+distances_full["distance_miles"]= distances_full["Distance"] *69
+```
+
+Referencing https://www.usgs.gov/faqs/how-much-distance-does-a-degree-minute-and-second-cover-your-maps for changing degree to miles.
+
+5. 
+```{python}
+average_distance= distances_full['distance_miles'].mean()
+average_distance
+```
+
+    a.
+The average distance is calculated in miles. Therefore, the average distance to the nearest hospital in Texas is 2.962 miles.
+    b.
+This number makes sense. It represents each zip code area is quite closed to hospital on average, which indicates a good healthcare accessibility in Texas.
+    c.
+```{python}
+texas_distance = zips_texas_centroids.merge(distances_full, on='ZCTA5', how='left')
+texas_distance.plot(column="distance_miles", legend=True)
+```
+
 
 # Effects of closures on access in Texas (15 pts)
 
