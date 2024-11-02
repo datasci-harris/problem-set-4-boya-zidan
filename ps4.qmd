@@ -150,72 +150,68 @@ Both plots present the same counts of observations for each year. It suggests th
 
 ```{python}
 # Filter active hospitals in 2016
-active_2016 = pos_2016[pos_2016['PGM_TRMNTN_CD'] == 0]
+active_2016 = short_term_hospitals_2016[short_term_hospitals_2016['PGM_TRMNTN_CD'] == 0]
 active_2016 = active_2016[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD']]
 ```
 
 ```{python}
-print("Columns in active_2016:", active_2016.columns)
-print("Columns in pos_2017 before merging:", pos_2017.columns)
 # Merge with 2017 data
 merged_2017 = active_2016.merge(
-    pos_2017[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+    short_term_hospitals_2017[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2017",
     suffixes=('', '_2017')
 )
 #merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-print("Columns in pos_2017 after merging:", merged_2017.columns)
-closed_2017 = merged_2017[(merged_2017['_merge_2017'] == 'left_only') | (merged_2017['PGM_TRMNTN_CD'].fillna(1) != 0)]
+closed_2017 = merged_2017[(merged_2017['_merge_2017'] == 'left_only') | (merged_2017['PGM_TRMNTN_CD']!= 0)]
 
 # Add the suspected closure year
 closed_2017.loc[:, 'Year of Suspected Closure'] = 2017
-print("Columns in closed_2017:", closed_2017.columns)
 closed_2017 = closed_2017[['FAC_NAME_2017', 'ZIP_CD_2017', 'Year of Suspected Closure','PRVDR_NUM']]
 ```
 
 ```{python}
-merged_2018 = closed_2017.merge(
-    pos_2018[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+merged_2018 = active_2016.merge(
+    short_term_hospitals_2018[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2018",
     suffixes=('', '_2018')
 )
 #merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-print("Columns in pos_2017 after merging:", merged_2018.columns)
-closed_2018 = merged_2018[(merged_2018['_merge_2018'] == 'left_only') | (merged_2018['PGM_TRMNTN_CD'].fillna(1) != 0)]
+closed_2018 = merged_2018[(merged_2018['_merge_2018'] == 'left_only') | (merged_2018['PGM_TRMNTN_CD'] != 0)]
 
 # Add the suspected closure year
 closed_2018.loc[:, 'Year of Suspected Closure'] = 2018
-print("Columns in closed_2017:", closed_2018.columns)
-closed_2018 = closed_2018[['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure','PRVDR_NUM']]
+closed_2018 = closed_2018[['FAC_NAME_2018', 'ZIP_CD_2018', 'Year of Suspected Closure','PRVDR_NUM']]
 ```
 
 
 ```{python}
-merged_2019 = closed_2018.merge(
-    pos_2019[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
+merged_2019 = active_2016.merge(
+    short_term_hospitals_2019[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD', 'PGM_TRMNTN_CD']],
     on='PRVDR_NUM',
     how='left',
     indicator="_merge_2019",
     suffixes=('', '_2019')
 )
 #merged_2017 = active_2016.merge(pos_2017[['PRVDR_NUM','FAC_NAME','ZIP_CD','PGM_TRMNTN_CD']], on='PRVDR_NUM', how='left', indicator="_merge_2017")
-print("Columns in pos_2017 after merging:", merged_2018.columns)
-closed_2019 = merged_2019[(merged_2019['_merge_2019'] == 'left_only') | (merged_2019['PGM_TRMNTN_CD'].fillna(1) != 0)]
+closed_2019 = merged_2019[(merged_2019['_merge_2019'] == 'left_only') | (merged_2019['PGM_TRMNTN_CD'] != 0)]
 
 # Add the suspected closure year
-closed_2019.loc[:, 'Year of Suspected Closure'] = 2018
-print("Columns in closed_2017:", closed_2019.columns)
+closed_2019.loc[:, 'Year of Suspected Closure'] = 2019
 closed_2019 = closed_2019[['FAC_NAME_2019', 'ZIP_CD_2019', 'Year of Suspected Closure','PRVDR_NUM']]
 ```
 
 ```{python}
 closed_2017 = closed_2017.rename(columns={'ZIP_CD_2017': 'ZIP_CD'})
+closed_2018 = closed_2018.rename(columns={'ZIP_CD_2018': 'ZIP_CD'})
 closed_2019 = closed_2019.rename(columns={'ZIP_CD_2019': 'ZIP_CD'})
 
+closed_2017 = closed_2017.rename(columns={'FAC_NAME_2017': 'FAC_NAME'})
+closed_2018 = closed_2018.rename(columns={'FAC_NAME_2018': 'FAC_NAME'})
+closed_2019 = closed_2019.rename(columns={'FAC_NAME_2019': 'FAC_NAME'})
 full_closures = pd.concat([closed_2017, closed_2018, closed_2019], ignore_index=True)
 full_closures= full_closures.drop_duplicates(subset=['FAC_NAME', 'ZIP_CD'], keep='first')
 
@@ -228,17 +224,62 @@ Referencing Chagpt with suffixes, asking how do i solve the problem when oit cre
 
 2. 
 ```{python}
+# sorted by name
 sorted_closed= full_closures.sort_values(by='FAC_NAME')
-# Select only the columns for facility name and year of suspected closure
-first_10 = sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 # Display the first 10 rows
-print(first_10)
+sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
 
 3. 
+
+```{python}
+active_zip_2016 = short_term_hospitals_2016[short_term_hospitals_2016['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2016')
+active_zip_2017 = short_term_hospitals_2017[short_term_hospitals_2017['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2017')
+active_zip_2018 = short_term_hospitals_2018[short_term_hospitals_2018['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2018')
+active_zip_2019 = short_term_hospitals_2019[short_term_hospitals_2019['PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2019')
+```
+
+```{python}
+zip_20162017 = active_zip_2016.merge(active_zip_2017, on='ZIP_CD', how='outer')
+zip_20162018 = zip_20162017.merge(active_zip_2018, on='ZIP_CD', how='outer')
+zip_20162019 = zip_20162018.merge(active_zip_2019, on='ZIP_CD', how='outer')
+```
+
+```{python}
+closures_zip_checking= full_closures.merge(zip_20162019, on='ZIP_CD', how='left')
+potential_mergers_2017 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2017) & (closures_zip_checking['zip_count_2016'] <= closures_zip_checking['zip_count_2017'])]
+potential_mergers_2018 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2018) & (closures_zip_checking['zip_count_2017'] <= closures_zip_checking['zip_count_2018'])]
+potential_mergers_2019 = closures_zip_checking[(closures_zip_checking['Year of Suspected Closure'] == 2019) & (closures_zip_checking['zip_count_2018'] <= closures_zip_checking['zip_count_2019'])]
+```
+```{python}
+potential_mergers = pd.concat([potential_mergers_2017, potential_mergers_2018, potential_mergers_2019])
+```
+
     a.
+```{python}
+number_potential_merges = len(potential_mergers)
+number_potential_merges
+```
+
+8 hospitals fit this definition of potentially being a merger/acquisition
     b.
+```{python}
+corrected_closures = full_closures.merge(potential_mergers[['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure']], on=['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure'], how='left', indicator=True)
+
+corrected_closures = corrected_closures[corrected_closures['_merge'] == 'left_only']
+number_correct_closure = len(corrected_closures)
+number_correct_closure
+```
+
+After correcting this, I have 169 hospital left.
+
     c.
+```{python}
+#sorted by name
+sorted_correct_closure= corrected_closures.sort_values(by='FAC_NAME')
+# Display the first 10 rows
+sorted_correct_closure[['FAC_NAME', 'Year of Suspected Closure']].head(10)
+```
 
 ## Download Census zip code shapefile (10 pt) 
 
