@@ -247,6 +247,7 @@ sorted_closed = full_closures.sort_values(by='FAC_NAME')
 sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
 
+
 3.
 
 ```{python}
@@ -271,18 +272,16 @@ closures_zip_checking = full_closures.merge(
     zip_20162019, on='ZIP_CD', how='left')
 potential_mergers_2017 = closures_zip_checking[
     (closures_zip_checking['Year of Suspected Closure'] == 2017) & 
-    (closures_zip_checking['zip_count_2016'] <= closures_zip_checking['zip_count_2017'])]
+    (closures_zip_checking['zip_count_2017'] <= closures_zip_checking['zip_count_2018'])]
 potential_mergers_2018 = closures_zip_checking[
     (closures_zip_checking['Year of Suspected Closure'] == 2018) & 
-    (closures_zip_checking['zip_count_2017'] <= closures_zip_checking['zip_count_2018'])]
-potential_mergers_2019 = closures_zip_checking[
-    (closures_zip_checking['Year of Suspected Closure'] == 2019) & 
     (closures_zip_checking['zip_count_2018'] <= closures_zip_checking['zip_count_2019'])]
 ```
 
+
 ```{python}
 potential_mergers = pd.concat(
-    [potential_mergers_2017, potential_mergers_2018, potential_mergers_2019])
+    [potential_mergers_2017, potential_mergers_2018])
 ```
 
     a.
@@ -331,8 +330,7 @@ After unzipping, the gz_2010_us_860_00_500k.xml file is 16 KB, gz_2010_us_860_00
 2.
 
 ```{python}
-data = gpd.read_file(
-    '/Users/boyalin/Documents/GitHub/ppha30538_ps/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp')
+data = gpd.read_file("/Users/kongzidan/Documents/GitHub/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp")
 
 texas_zip = data[data['ZCTA5'].astype(str).str.startswith(
     ('733', '75', '76', '77', '78', '79'))]
@@ -381,6 +379,8 @@ zips_all_centroids.shape
 zips_all_centroids.columns
 ```
 
+The dimension of the dataframe is that it contains 33120 observations and 7 column. 
+
 2. 
 ```{python}
 texas_prefixes = ('733', '75', '76', '77', '78', '79')
@@ -407,6 +407,7 @@ from shapely.geometry import Polygon, Point, MultiPoint
 from datetime import datetime
 ```
 
+
     a.
 ```{python}
 subset = zips_texas_centroids.head(10)
@@ -418,6 +419,7 @@ for index, row in subset.iterrows():
 end = datetime.now()
 print('Duration:{}'.format(end-start))
 ```
+
 ```{python}
 number_in_ziptx = len(zips_texas_centroids)
 number_in_ziptx
@@ -425,7 +427,7 @@ total_duration = number_in_ziptx/10 * (end-start)
 total_duration
 ```
 
-The duration for running teh subset is around 0.5 seconds. The approximated entire procedure for full dataset will be around 105 seconds.
+The duration for running the subset is around 0.5 seconds. The approximated entire procedure for full dataset will be around 105 seconds.
 
     b.
 ```{python}
@@ -472,7 +474,12 @@ This number makes sense. It represents each zip code area is quite closed to hos
     c.
 ```{python}
 texas_distance = zips_texas_centroids.merge(distances_full, on='ZCTA5', how='left')
-texas_distance.plot(column="distance_miles", legend=True)
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+texas_distance.plot(column='distance_miles', ax=ax, legend=True,legend_kwds={'label': "Distance to Nearest Hospital (miles)"})
+ax.set_title('Average Distance to Hospital For Zipcode Area in Texas',
+             fontdict={'fontsize': '17'})
+plt.show()
 ```
 
 
