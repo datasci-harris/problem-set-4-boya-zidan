@@ -9,3 +9,14 @@ ps4.tex
 
 # Ignore generated files directory
 ps4_files/
+
+
+# Ignore datasets
+pos2016.csv
+pos2017.csv
+pos2018.csv
+pos2019.csv
+requirements.txt
+
+# Ignore all files in the gz_2010_us_860_00_500k folder
+gz_2010_us_860_00_500k/
