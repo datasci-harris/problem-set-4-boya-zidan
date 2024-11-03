@@ -59,6 +59,7 @@ Vairables we pulled in pos2016.csv include PRVDR_CTGRY_SBTYP_CD, PRVDR_CTGRY_CD,
     a.
 
 ```{python}
+# read csv file and filter to short-term hospitals in 2016
 pos_2016 = pd.read_csv('pos2016.csv')
 short_term_hospitals_2016 = pos_2016[(pos_2016['PRVDR_CTGRY_CD'] == 1) & (
     pos_2016['PRVDR_CTGRY_SBTYP_CD'] == 1)].copy()
@@ -80,6 +81,7 @@ Data Source(AHA): https://www.aha.org/system/files/2018-01/Fast%20Facts%202018%2
 3.
 
 ```{python}
+# read csv file and filter to short-term hospitals for 2017-2019
 pos_2017 = pd.read_csv('pos2017.csv')
 short_term_hospitals_2017 = pos_2017[(pos_2017['PRVDR_CTGRY_CD'] == 1) & (
     pos_2017['PRVDR_CTGRY_SBTYP_CD'] == 1)].copy()
@@ -94,6 +96,7 @@ short_term_hospitals_2019 = pos_2019[(pos_2019['PRVDR_CTGRY_CD'] == 1) & (
 # ChatGDP reference for "UnicodeDecodeError: 'utf-8' codec can't decode
 # byte 0xa0 in position 119424", solution: add encoding='ISO-8859-1'
 
+# add column indicating corresponding year
 short_term_hospitals_2016.loc[:, 'Year'] = 2016
 short_term_hospitals_2017.loc[:, 'Year'] = 2017
 short_term_hospitals_2018.loc[:, 'Year'] = 2018
@@ -105,6 +108,7 @@ all_hospitals = pd.concat([short_term_hospitals_2016,
 # Pandas official website reference for pd.concat:
 # https://pandas.pydata.org/docs/reference/api/pandas.concat.html
 
+# group by year and make a barchart
 hospitals_by_year = all_hospitals.groupby(
     'Year').size().reset_index(name='Number of Hospitals')
 
@@ -125,9 +129,11 @@ hospital_chart
     a.
 
 ```{python}
+# group by year and count unique hospitals based on PRVDR_NUM
 unique_hospitals_by_year = all_hospitals.groupby(
     'Year')['PRVDR_NUM'].nunique().reset_index(name='Number of Unique Hospitals')
 
+# make a barchart
 bar_chart = alt.Chart(unique_hospitals_by_year).mark_bar().encode(
     x='Year:O', y='Number of Unique Hospitals:Q', color='Year:O'
 ).properties(
@@ -216,7 +222,7 @@ closed_2019 = closed_2019[['FAC_NAME_2019', 'ZIP_CD_2019',
 ```
 
 ```{python}
-#rename column for concat
+# rename column for concat
 closed_2017 = closed_2017.rename(columns={'ZIP_CD_2017': 'ZIP_CD'})
 closed_2018 = closed_2018.rename(columns={'ZIP_CD_2018': 'ZIP_CD'})
 closed_2019 = closed_2019.rename(columns={'ZIP_CD_2019': 'ZIP_CD'})
@@ -225,7 +231,7 @@ closed_2017 = closed_2017.rename(columns={'FAC_NAME_2017': 'FAC_NAME'})
 closed_2018 = closed_2018.rename(columns={'FAC_NAME_2018': 'FAC_NAME'})
 closed_2019 = closed_2019.rename(columns={'FAC_NAME_2019': 'FAC_NAME'})
 
-#concat datasets
+# concat datasets
 full_closures = pd.concat(
     [closed_2017, closed_2018, closed_2019], ignore_index=True)
 full_closures = full_closures.drop_duplicates(
@@ -240,7 +246,7 @@ print(f'Number of hospitals facing suspected closures: {number_of_hospital}')
 
 2.
 ```{python}
-#sorting by name
+# sorting by name
 sorted_closed = full_closures.sort_values(by='FAC_NAME')
 sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
@@ -249,7 +255,7 @@ sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 3.
 
 ```{python}
-#taking active hospitals datas and group by on zipcode
+# taking active hospitals datas and group by on zip codes
 active_zip_2016 = short_term_hospitals_2016[short_term_hospitals_2016[
     'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2016')
 active_zip_2017 = short_term_hospitals_2017[short_term_hospitals_2017[
@@ -261,14 +267,14 @@ active_zip_2019 = short_term_hospitals_2019[short_term_hospitals_2019[
 ```
 
 ```{python}
-#merge number of active hospitals grouped by zipcode to one dataset
+# merge number of active hospitals grouped by zip codes to one dataset
 zip_20162017 = active_zip_2016.merge(active_zip_2017, on='ZIP_CD', how='outer')
 zip_20162018 = zip_20162017.merge(active_zip_2018, on='ZIP_CD', how='outer')
 zip_20162019 = zip_20162018.merge(active_zip_2019, on='ZIP_CD', how='outer')
 ```
 
 ```{python}
-#checking for definition for potential merges
+# checking for definition for potential merges
 closures_zip_checking = full_closures.merge(
     zip_20162019, on='ZIP_CD', how='left')
 potential_mergers_2017 = closures_zip_checking[
@@ -280,7 +286,7 @@ potential_mergers_2018 = closures_zip_checking[
 ```
 
 ```{python}
-#concat to full dataset
+# concat to full dataset
 potential_mergers = pd.concat(
     [potential_mergers_2017, potential_mergers_2018])
 ```
@@ -288,7 +294,7 @@ potential_mergers = pd.concat(
     a.
 
 ```{python}
-#get numbers of potential merges
+# get numbers of potential merges
 number_potential_merges = len(potential_mergers)
 print(f'Number of hospitals potentially being a merger/acquisition: {number_potential_merges}')
 ```
@@ -296,7 +302,7 @@ print(f'Number of hospitals potentially being a merger/acquisition: {number_pote
     b.
 
 ```{python}
-#remove potential merges
+# remove potential merges
 corrected_closures = full_closures.merge(potential_mergers[[
     'FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure']],
     on=['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure'],
@@ -309,7 +315,7 @@ print(f'Number of hospitals left after correction: {number_correct_closure}')
 
     c.
 ```{python}
-#sorted by name
+# sorted by name
 sorted_correct_closure = corrected_closures.sort_values(by='FAC_NAME')
 sorted_correct_closure[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
@@ -334,6 +340,7 @@ After unzipping, the gz_2010_us_860_00_500k.xml file is 16 KB, gz_2010_us_860_00
 ```{python}
 data = gpd.read_file('/Users/boyalin/Documents/GitHub/ppha30538_ps/problem-set-4-boya-zidan/gz_2010_us_860_00_500k/gz_2010_us_860_00_500k.shp')
 
+# filter to Texas zip codes for both datasets
 texas_zip = data[data['ZCTA5'].astype(str).str.startswith(
     ('733', '75', '76', '77', '78', '79'))]
 pos_2016_tx = short_term_hospitals_2016[short_term_hospitals_2016['ZIP_CD'].astype(
@@ -345,11 +352,13 @@ hospitals_per_zip.head(6)
 ```
 
 ```{python}
+# make both datasets have same column name and data type
 texas_zip = texas_zip.rename(columns={'ZCTA5': 'ZIP_CD'})
 texas_zip['ZIP_CD'] = texas_zip['ZIP_CD'].astype(str)
 hospitals_per_zip['ZIP_CD'] = hospitals_per_zip['ZIP_CD'].astype(
     int).astype(str)
 
+# merge the two datasets for plotting
 texas_map = texas_zip.merge(hospitals_per_zip, on='ZIP_CD', how='left')
 
 fig, ax = plt.subplots(1, 1, figsize=(8, 6))
@@ -369,16 +378,16 @@ plt.show()
 1. 
 
 ```{python}
-#calculate centroid
+# calculate centroid
 zips_all_centroids = data.copy()
 zips_all_centroids['centroid'] = zips_all_centroids['geometry'].centroid
 ```
 ```{python}
-#get dimension
+# get dimension
 zips_all_centroids.shape
 ```
 ```{python}
-#get column names
+# get column names
 zips_all_centroids.columns
 zips_all_centroids.head(5)
 ```
@@ -394,7 +403,7 @@ The dimension of the dataframe is that it contains 33120 observations and 7 colu
 
 2. 
 ```{python}
-#identified prefixes
+# identified prefixes
 texas_prefixes = ('733', '75', '76', '77', '78', '79')
 bordering_prefixes = ('870', '871', '872', '873', '874', '875', '876', '877',
                       '878', '879', '880', '881', '882', '883', '884', '73',
@@ -403,13 +412,13 @@ bordering_prefixes = ('870', '871', '872', '873', '874', '875', '876', '877',
                       '701', '702', '703', '704', '705', '706', '707', '708',
                       '709', '710', '711', '712', '713', '714', '715', '733',
                       '75', '76', '77', '78', '79')
-# subset texas data with prefixes
+# subset Texas data with prefixes
 zips_texas_centroids = zips_all_centroids[zips_all_centroids['ZCTA5'].str.startswith(
     texas_prefixes)]
-# subset texas and borders data with prefixes
+# subset Texas and borders data with prefixes
 zips_texas_borderstates_centroids = zips_all_centroids[zips_all_centroids[
     'ZCTA5'].str.startswith(bordering_prefixes)]
-#get the number of unique zipcode
+# get the number of unique zip codes
 num_unique_zip_tx = zips_texas_centroids['ZCTA5'].nunique()
 num_unique_zip_all = zips_texas_borderstates_centroids['ZCTA5'].nunique()
 
@@ -420,11 +429,11 @@ print(
 
 3. 
 ```{python}
-# filter zipcode with at least one hospital
+# filter zip codes with at least one hospital
 hospitals_per_zip_1 = hospitals_per_zip[hospitals_per_zip['counts'] >= 1]
-#rename for merge
+# rename for merge
 hospitals_per_zip_1 = hospitals_per_zip_1.rename(columns={'ZIP_CD': 'ZCTA5'})
-#merge two dataset
+# merge two dataset
 zips_withhospital_centroids = zips_texas_borderstates_centroids.merge(
     hospitals_per_zip_1, on='ZCTA5', how='inner')
 ```
@@ -441,7 +450,7 @@ from datetime import datetime
 ```{python}
 subset = zips_texas_centroids.head(10)
 
-#calculate time for the for loop of measuring distance for subset
+# calculate time for the for loop of measuring distance for subset
 start = datetime.now()
 distances = []
 for index, row in subset.iterrows():
@@ -454,12 +463,12 @@ print('Duration:{}'.format(end-start))
 # Referencing stackoverflow for for loop by rows, https://stackoverflow.com/questions
 # /16476924/how-can-i-iterate-over-rows-in-a-pandas-dataframe/55557758#55557758 
 # Searching how to do for loop row by row
-# StackOverflow Referencing for calculating distance, searching distance to centroid: https://stackoverflow.com/questions/30740046/
-# calculate-distance-to-nearest-feature-with-geopandas 
+# StackOverflow Referencing for calculating distance, searching distance to centroid: 
+# https://stackoverflow.com/questions/30740046/calculate-distance-to-nearest-feature-with-geopandas 
 ```
 
 ```{python}
-#estimate time for full dataset
+# estimate time for full dataset
 number_in_ziptx = len(zips_texas_centroids)
 number_in_ziptx
 total_duration = number_in_ziptx/10 * (end-start)
@@ -470,7 +479,7 @@ The duration for running the subset is around 0.5 seconds. The approximated enti
 
     b.
 ```{python}
-#calculate time for the for loop of measuring distance for full dataset
+# calculate time for the for loop of measuring distance for full dataset
 start2 = datetime.now()
 distances_full = []
 for index, row in zips_texas_centroids.iterrows():
@@ -484,7 +493,7 @@ print('Duration for full data for :{}'.format(end2-start2))
 # turn the outcome of for loop to a dataset
 distances_full = pd.DataFrame(distances_full, columns=['ZCTA5', 'Distance'])
 
-#Refencing chatgpt for separating strings to df
+# Refencing ChatGPT for separating strings to df
 ```
 
 The time for calculating the distance for full dataset is around 100 seconds, which is quite close to the previous estimation.
@@ -497,11 +506,11 @@ with open(
     contents = prj_file.read()
     print(contents)
 
-#Referencing Chatgpt for reading prj files
+# Referencing ChatGPT for reading prj files
 ```
 
 ```{python}
-#transfering units
+# transfering units
 distances_full["distance_miles"]= distances_full["Distance"] *69
 # Referencing https://www.usgs.gov/faqs/how-much-distance-does-a-degree-minute-
 # and-second-cover-your-maps for changing degree to miles.
@@ -509,7 +518,7 @@ distances_full["distance_miles"]= distances_full["Distance"] *69
 
 5. 
 ```{python}
-#calculating average distance in miles
+# calculating average distance in miles
 average_distance = distances_full['distance_miles'].mean()
 print(f'Average distance to the nearest hospital: {average_distance}')
 ```
@@ -522,7 +531,7 @@ The average distance to the nearest hospital in Texas is 2.962 miles. This numbe
 
     c.
 ```{python}
-#merge for ploting graphs
+# merge for ploting graphs
 texas_distance = zips_texas_centroids.merge(
     distances_full, on='ZCTA5', how='left')
 
@@ -540,12 +549,15 @@ plt.show()
 1.
 
 ```{python}
+# find zips codes for hospital closures in Texas
 texas_closures = corrected_closures[corrected_closures['ZIP_CD'].astype(
     str).str.startswith(('733', '75', '76', '77', '78', '79'))]
+# group by zip codes and count closures for each 
 zip_closure_counts = texas_closures.groupby(
     'ZIP_CD').size().reset_index(name='Closure_Counts')
 print(zip_closure_counts.head(10))
 
+# make a summary table for number of closures and number of zip codes
 zip_closure_summary = zip_closure_counts[
     'Closure_Counts'].value_counts().reset_index()
 zip_closure_summary.columns = ['Number of Closures', 'Number of ZIP Codes']
@@ -556,18 +568,21 @@ print(zip_closure_summary)
 2.
 
 ```{python}
+# change the data type for ZIP_CD columns in texas_closures
 texas_closures['ZIP_CD'] = texas_closures['ZIP_CD'].astype(
     str).str.split('.').str[0].str.strip()
 # ChatGDP reference for extracting the integer part from float data
 # and converting it to a string
 
+# find unique Texas zip codes and count for that
 affected_zip_codes = texas_closures['ZIP_CD'].unique()
 affected_texas_zips = texas_distance[texas_distance['ZCTA5'].isin(
     affected_zip_codes)]
-print(f'Total number of affected ZIP codes: {len(affected_zip_codes)}')
+print(f'Number of directly affected ZIP codes: {len(affected_zip_codes)}')
 ```
 
 ```{python}
+# plot the choropleth
 fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 texas_distance.plot(ax=ax, legend=True, column='distance_miles',
                     color='lightgrey', alpha=0.6, edgecolor='black', linewidth=0.5)
@@ -580,6 +595,7 @@ ax.set_title(
 ax.set_xlabel('Longitude')
 ax.set_ylabel('Latitude')
 
+# add legend for clarity 
 plt.scatter([], [], color='blue', label='Directly Affected', s=100, alpha=0.6)
 plt.scatter([], [], color='lightgrey', label='Not Affected', s=100, alpha=0.6)
 ax.legend(title='Categories')
@@ -591,6 +607,7 @@ plt.show()
 3.
 
 ```{python}
+# create a GeoDataFrame of the directly affected zip codes
 directly_affected_zips = affected_texas_zips.copy()
 directly_affected_zips = gpd.GeoDataFrame(
     directly_affected_zips, geometry='geometry')
@@ -600,7 +617,7 @@ texas_distance = texas_distance.to_crs(epsg=3857)
 directly_affected_zips = directly_affected_zips.to_crs(epsg=3857)
 # ChatGDP reference for ensuring the units of datasets to be consistent
 
-# 1 mile = 1609.34 meters
+# Create a 10-mile buffer around (1 mile = 1609.34 meters)
 buffer_distance = 10 * 1609.34
 directly_affected_zips['buffer'] = directly_affected_zips.geometry.buffer(
     buffer_distance)
@@ -608,11 +625,13 @@ directly_affected_zips['buffer'] = directly_affected_zips.geometry.buffer(
 buffered_affected_zips = gpd.GeoDataFrame(
     directly_affected_zips, geometry='buffer')
 
+# perform spatial join with overall Texas zip codes
 indirectly_affected_zips = gpd.sjoin(
     texas_distance, buffered_affected_zips,
     how='inner', predicate='intersects')
 # StackOverflow reference for specific usage of gpd.sjoin:
-# https://stackoverflow.com/questions/68504942/how-do-geopandas-sjoin-predicate-within-and-intersects-differ
+# https://stackoverflow.com/questions/68504942/how-do-geopandas-sjoin-predicate
+# -within-and-intersects-differ
 
 indirectly_affected_zips = indirectly_affected_zips.rename(
     columns={'ZCTA5_left': 'ZCTA5',
@@ -628,6 +647,7 @@ print(
 
 ```{python}
 def categorize_zip(zip_code):
+    """ function for categoriing zip codes """
     if zip_code in directly_affected_zips['ZCTA5'].values:
         return 'Directly Affected'
     elif zip_code in indirectly_affected_zips['ZCTA5'].values:
@@ -635,8 +655,10 @@ def categorize_zip(zip_code):
     else:
         return 'Not Affected'
 
+# apply the function
 texas_distance['category'] = texas_distance['ZCTA5'].apply(categorize_zip)
 
+# setting up color mapping for different categories
 color_mapping = {
     'Directly Affected': 'blue',
     'Indirectly Affected': 'skyblue',
@@ -645,9 +667,10 @@ color_mapping = {
 texas_distance['color'] = texas_distance['category'].map(color_mapping)
 # ChatGDP reference for setting up color mapping for three categories in my data
 
+# plot the choropleth
 fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 texas_distance.plot(ax=ax, legend=True,
-                    color=texas_distance['color'], alpha=0.6, 
+                    color=texas_distance['color'], alpha=0.6,
                     edgecolor='black', linewidth=0.5)
 
 ax.set_title(
@@ -677,6 +700,7 @@ Missing data in any given year can lead to misclassification of hospital closure
 To do a better job in confirming hospital closures, we should cross-check additional columns, such as the effective dates of previous ownership changes, and utilize resources like official reports or regional hospital updates. Additionally, if feasible, conducting longitudinal studies will also help us monitor changes over time more effectively.
 
 2. 
+
 The zipcodes that are in the zipcodes areas with hospital closed are directly affected since they have less hospital in their zipcode area. The measurement of indirectly affected through buffering based on distance might have some limitations.
 We set a 10-miles buffer for each directly affected zipcode area, without considering the population density and real world practice. There are might citizens living in a further area but we didn't include with a 10-miles buffer. Furthermore, we should consider the level of affected based on population in the area instead of just direct and indirect based on distance. Some zipcode areas might have more people, then the closure of hospital might have higher influence since more people are affected.
 We can improve the measurement by including the population density in each affected zipcode area. The buffer distance range should based on a actual geographical situation. For example, if there are citizens living in zipcode areas further away from the direct affected zip codes, we might consider to use a buffer with longer distance.
