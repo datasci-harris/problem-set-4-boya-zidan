@@ -1,0 +1,11 @@
+# Virtual environment
+.venv/
+
+# Ignore macOS system file
+.DS_Store
+
+# Ignore LaTeX temporary files
+ps4.tex
+
+# Ignore generated files directory
+ps4_files/
