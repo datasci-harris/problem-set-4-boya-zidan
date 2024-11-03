@@ -149,13 +149,13 @@ Both plots present the same counts of observations for each year. It suggests th
 1.
 
 ```{python}
-# Filter active hospitals in 2016
+# filter active hospitals in 2016
 active_2016 = short_term_hospitals_2016[short_term_hospitals_2016['PGM_TRMNTN_CD'] == 0]
 active_2016 = active_2016[['PRVDR_NUM', 'FAC_NAME', 'ZIP_CD']]
 ```
 
 ```{python}
-# Merge with 2017 data
+# merge with 2017 data
 merged_2017 = active_2016.merge(
     short_term_hospitals_2017[['PRVDR_NUM', 'FAC_NAME',
                                'ZIP_CD', 'PGM_TRMNTN_CD']],
@@ -168,14 +168,14 @@ merged_2017 = active_2016.merge(
 closed_2017 = merged_2017[(merged_2017['_merge_2017'] == 'left_only') | (
     merged_2017['PGM_TRMNTN_CD'] != 0)].copy()
 
-# Add the suspected closure year
+# add the suspected closure year
 closed_2017.loc[:, 'Year of Suspected Closure'] = 2017
 closed_2017 = closed_2017[['FAC_NAME_2017', 'ZIP_CD_2017',
                            'Year of Suspected Closure', 'PRVDR_NUM']]
 ```
 
 ```{python}
-# Merge with 2018 data
+# merge with 2018 data
 merged_2018 = active_2016.merge(
     short_term_hospitals_2018[['PRVDR_NUM', 'FAC_NAME',
                                'ZIP_CD', 'PGM_TRMNTN_CD']],
@@ -188,7 +188,7 @@ merged_2018 = active_2016.merge(
 closed_2018 = merged_2018[(merged_2018['_merge_2018'] == 'left_only') | (
     merged_2018['PGM_TRMNTN_CD'] != 0)].copy()
 
-# Add the suspected closure year
+# add the suspected closure year
 closed_2018.loc[:, 'Year of Suspected Closure'] = 2018
 closed_2018 = closed_2018[['FAC_NAME_2018', 'ZIP_CD_2018',
                            'Year of Suspected Closure', 'PRVDR_NUM']]
@@ -196,7 +196,7 @@ closed_2018 = closed_2018[['FAC_NAME_2018', 'ZIP_CD_2018',
 
 
 ```{python}
-# Merge with 2019 data
+# merge with 2019 data
 merged_2019 = active_2016.merge(
     short_term_hospitals_2019[['PRVDR_NUM', 'FAC_NAME',
                                'ZIP_CD', 'PGM_TRMNTN_CD']],
@@ -209,13 +209,14 @@ merged_2019 = active_2016.merge(
 closed_2019 = merged_2019[(merged_2019['_merge_2019'] == 'left_only') | (
     merged_2019['PGM_TRMNTN_CD'] != 0)].copy()
 
-# Add the suspected closure year
+# add the suspected closure year
 closed_2019.loc[:, 'Year of Suspected Closure'] = 2019
 closed_2019 = closed_2019[['FAC_NAME_2019', 'ZIP_CD_2019',
                            'Year of Suspected Closure', 'PRVDR_NUM']]
 ```
 
 ```{python}
+#rename column for concat
 closed_2017 = closed_2017.rename(columns={'ZIP_CD_2017': 'ZIP_CD'})
 closed_2018 = closed_2018.rename(columns={'ZIP_CD_2018': 'ZIP_CD'})
 closed_2019 = closed_2019.rename(columns={'ZIP_CD_2019': 'ZIP_CD'})
@@ -224,6 +225,7 @@ closed_2017 = closed_2017.rename(columns={'FAC_NAME_2017': 'FAC_NAME'})
 closed_2018 = closed_2018.rename(columns={'FAC_NAME_2018': 'FAC_NAME'})
 closed_2019 = closed_2019.rename(columns={'FAC_NAME_2019': 'FAC_NAME'})
 
+#concat datasets
 full_closures = pd.concat(
     [closed_2017, closed_2018, closed_2019], ignore_index=True)
 full_closures = full_closures.drop_duplicates(
@@ -238,6 +240,7 @@ print(f'Number of hospitals facing suspected closures: {number_of_hospital}')
 
 2.
 ```{python}
+#sorting by name
 sorted_closed = full_closures.sort_values(by='FAC_NAME')
 sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
@@ -246,6 +249,7 @@ sorted_closed[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 3.
 
 ```{python}
+#taking active hospitals datas and group by on zipcode
 active_zip_2016 = short_term_hospitals_2016[short_term_hospitals_2016[
     'PGM_TRMNTN_CD'] == 0].groupby('ZIP_CD').size().reset_index(name='zip_count_2016')
 active_zip_2017 = short_term_hospitals_2017[short_term_hospitals_2017[
@@ -257,12 +261,14 @@ active_zip_2019 = short_term_hospitals_2019[short_term_hospitals_2019[
 ```
 
 ```{python}
+#merge number of active hospitals grouped by zipcode to one dataset
 zip_20162017 = active_zip_2016.merge(active_zip_2017, on='ZIP_CD', how='outer')
 zip_20162018 = zip_20162017.merge(active_zip_2018, on='ZIP_CD', how='outer')
 zip_20162019 = zip_20162018.merge(active_zip_2019, on='ZIP_CD', how='outer')
 ```
 
 ```{python}
+#checking for definition for potential merges
 closures_zip_checking = full_closures.merge(
     zip_20162019, on='ZIP_CD', how='left')
 potential_mergers_2017 = closures_zip_checking[
@@ -274,6 +280,7 @@ potential_mergers_2018 = closures_zip_checking[
 ```
 
 ```{python}
+#concat to full dataset
 potential_mergers = pd.concat(
     [potential_mergers_2017, potential_mergers_2018])
 ```
@@ -281,6 +288,7 @@ potential_mergers = pd.concat(
     a.
 
 ```{python}
+#get numbers of potential merges
 number_potential_merges = len(potential_mergers)
 print(f'Number of hospitals potentially being a merger/acquisition: {number_potential_merges}')
 ```
@@ -288,6 +296,7 @@ print(f'Number of hospitals potentially being a merger/acquisition: {number_pote
     b.
 
 ```{python}
+#remove potential merges
 corrected_closures = full_closures.merge(potential_mergers[[
     'FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure']],
     on=['FAC_NAME', 'ZIP_CD', 'Year of Suspected Closure'],
@@ -300,6 +309,7 @@ print(f'Number of hospitals left after correction: {number_correct_closure}')
 
     c.
 ```{python}
+#sorted by name
 sorted_correct_closure = corrected_closures.sort_values(by='FAC_NAME')
 sorted_correct_closure[['FAC_NAME', 'Year of Suspected Closure']].head(10)
 ```
@@ -359,13 +369,16 @@ plt.show()
 1. 
 
 ```{python}
+#calculate centroid
 zips_all_centroids = data.copy()
 zips_all_centroids['centroid'] = zips_all_centroids['geometry'].centroid
 ```
 ```{python}
+#get dimension
 zips_all_centroids.shape
 ```
 ```{python}
+#get column names
 zips_all_centroids.columns
 zips_all_centroids.head(5)
 ```
@@ -381,6 +394,7 @@ The dimension of the dataframe is that it contains 33120 observations and 7 colu
 
 2. 
 ```{python}
+#identified prefixes
 texas_prefixes = ('733', '75', '76', '77', '78', '79')
 bordering_prefixes = ('870', '871', '872', '873', '874', '875', '876', '877',
                       '878', '879', '880', '881', '882', '883', '884', '73',
@@ -389,11 +403,13 @@ bordering_prefixes = ('870', '871', '872', '873', '874', '875', '876', '877',
                       '701', '702', '703', '704', '705', '706', '707', '708',
                       '709', '710', '711', '712', '713', '714', '715', '733',
                       '75', '76', '77', '78', '79')
+# subset texas data with prefixes
 zips_texas_centroids = zips_all_centroids[zips_all_centroids['ZCTA5'].str.startswith(
     texas_prefixes)]
+# subset texas and borders data with prefixes
 zips_texas_borderstates_centroids = zips_all_centroids[zips_all_centroids[
     'ZCTA5'].str.startswith(bordering_prefixes)]
-
+#get the number of unique zipcode
 num_unique_zip_tx = zips_texas_centroids['ZCTA5'].nunique()
 num_unique_zip_all = zips_texas_borderstates_centroids['ZCTA5'].nunique()
 
@@ -404,13 +420,16 @@ print(
 
 3. 
 ```{python}
+# filter zipcode with at least one hospital
 hospitals_per_zip_1 = hospitals_per_zip[hospitals_per_zip['counts'] >= 1]
+#rename for merge
 hospitals_per_zip_1 = hospitals_per_zip_1.rename(columns={'ZIP_CD': 'ZCTA5'})
+#merge two dataset
 zips_withhospital_centroids = zips_texas_borderstates_centroids.merge(
     hospitals_per_zip_1, on='ZCTA5', how='inner')
 ```
 
-I decide to do a inner merger, which only keeps the zipcode areas that have at least 1 hospitals and also located in in Texas or a bordering state, which menas the zipcodes that appear in both dataset. I am merging based on 'ZCTA5', which is teh zipcode.
+I decide to do a inner merger, which only keeps the zipcode areas that have at least 1 hospitals and also located in in Texas or a bordering state, which menas the zipcodes that appear in both dataset. I am merging based on 'ZCTA5', which is the zipcode.
 
 4. 
 ```{python}
@@ -421,6 +440,8 @@ from datetime import datetime
     a.
 ```{python}
 subset = zips_texas_centroids.head(10)
+
+#calculate time for the for loop of measuring distance for subset
 start = datetime.now()
 distances = []
 for index, row in subset.iterrows():
@@ -438,6 +459,7 @@ print('Duration:{}'.format(end-start))
 ```
 
 ```{python}
+#estimate time for full dataset
 number_in_ziptx = len(zips_texas_centroids)
 number_in_ziptx
 total_duration = number_in_ziptx/10 * (end-start)
@@ -448,6 +470,7 @@ The duration for running the subset is around 0.5 seconds. The approximated enti
 
     b.
 ```{python}
+#calculate time for the for loop of measuring distance for full dataset
 start2 = datetime.now()
 distances_full = []
 for index, row in zips_texas_centroids.iterrows():
@@ -458,7 +481,10 @@ end2 = datetime.now()
 print('Duration for full data for :{}'.format(end2-start2))
 ```
 ```{python}
+# turn the outcome of for loop to a dataset
 distances_full = pd.DataFrame(distances_full, columns=['ZCTA5', 'Distance'])
+
+#Refencing chatgpt for separating strings to df
 ```
 
 The time for calculating the distance for full dataset is around 100 seconds, which is quite close to the previous estimation.
@@ -470,9 +496,12 @@ with open(
 ) as prj_file:
     contents = prj_file.read()
     print(contents)
+
+#Referencing Chatgpt for reading prj files
 ```
 
 ```{python}
+#transfering units
 distances_full["distance_miles"]= distances_full["Distance"] *69
 # Referencing https://www.usgs.gov/faqs/how-much-distance-does-a-degree-minute-
 # and-second-cover-your-maps for changing degree to miles.
@@ -480,6 +509,7 @@ distances_full["distance_miles"]= distances_full["Distance"] *69
 
 5. 
 ```{python}
+#calculating average distance in miles
 average_distance = distances_full['distance_miles'].mean()
 print(f'Average distance to the nearest hospital: {average_distance}')
 ```
@@ -492,6 +522,7 @@ The average distance to the nearest hospital in Texas is 2.962 miles. This numbe
 
     c.
 ```{python}
+#merge for ploting graphs
 texas_distance = zips_texas_centroids.merge(
     distances_full, on='ZCTA5', how='left')
 
@@ -646,3 +677,6 @@ Missing data in any given year can lead to misclassification of hospital closure
 To do a better job in confirming hospital closures, we should cross-check additional columns, such as the effective dates of previous ownership changes, and utilize resources like official reports or regional hospital updates. Additionally, if feasible, conducting longitudinal studies will also help us monitor changes over time more effectively.
 
 2. 
+The zipcodes that are in the zipcodes areas with hospital closed are directly affected since they have less hospital in their zipcode area. The measurement of indirectly affected through buffering based on distance might have some limitations.
+We set a 10-miles buffer for each directly affected zipcode area, without considering the population density and real world practice. There are might citizens living in a further area but we didn't include with a 10-miles buffer. Furthermore, we should consider the level of affected based on population in the area instead of just direct and indirect based on distance. Some zipcode areas might have more people, then the closure of hospital might have higher influence since more people are affected.
+We can improve the measurement by including the population density in each affected zipcode area. The buffer distance range should based on a actual geographical situation. For example, if there are citizens living in zipcode areas further away from the direct affected zip codes, we might consider to use a buffer with longer distance.
